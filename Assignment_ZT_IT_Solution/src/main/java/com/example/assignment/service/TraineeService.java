@@ -1,12 +1,14 @@
 package com.example.assignment.service;
 
-
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
 import com.example.assignment.entity.Trainee;
 import com.example.assignment.repository.TraineeRepository;
 import com.example.assignment.response.Response;
@@ -15,73 +17,158 @@ import com.example.assignment.response.Response;
 public class TraineeService {
 	@Autowired
 	private TraineeRepository traineerepo;
-	private static Pattern Email_Regex =  Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$",Pattern.CASE_INSENSITIVE);
-	
-	//Service To Add Trainee Information
-	
+
+	// Service To Add Trainee Information
+
 	public Response addTrainee(Trainee trainee) {
-		
+
+		// create an object for Response Class.
 		Response respon = new Response();
-		
-		//check data validation before save the data
-		
-		if(trainee.getName().equals("")) {
-		 respon.setStatus("Failed to Store Data");
-		 respon.setAlertMessage("Sorry You Do not follow Proper ways to Add The Data");
-		 return respon;
+
+		// check data validation before save the data
+
+		// create variables to check email validation.
+		Pattern p = Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$", Pattern.CASE_INSENSITIVE);
+		Matcher m = p.matcher(trainee.getEmail());
+		Pattern password = Pattern.compile("^[A-Z0-9]+@[A-Z0-9]{6,12}$", Pattern.CASE_INSENSITIVE);
+		Matcher passwordmatch = password.matcher(trainee.getPassword());
+
+		if (trainee.getName().equals("")) {
+			respon.setStatus("Fail");
+			respon.setAlertMessage("The Name Field Is Required Mininum 6 character is Needed");
+			return respon;
+		} else if (trainee.getUsername().equals("")) {
+			respon.setStatus("Fail");
+			respon.setAlertMessage("Null Value is Not Allowed");
+			return respon;
 		}
-		else if(trainee.getPassword().equals("")) {
-			respon.setStatus("Failed");
-			 respon.setAlertMessage("Sorry You Do not follow Proper ways to Add The Data");
-			 return respon;
+
+		else if (trainee.getPassword().equals("") || !passwordmatch.matches()) {
+			respon.setStatus("Fail");
+			respon.setAlertMessage("The Password Field is Required");
+			return respon;
+		} else if (!m.matches()) {
+			respon.setStatus("Fail");
+			respon.setAlertMessage("Give The Correct Email Account Follow The Standard Email Pattern");
+			return respon;
+
 		}
-		else if(trainee.getEmail().equals("")) {
-			respon.setStatus("Failed");
-			 respon.setAlertMessage("Sorry You Do not follow Proper ways to Add The Data");
-			 return respon;
+
+		Trainee traine = traineerepo.save(trainee);
+
+		// Response Here Show a Response after successfully Added The Data
+
+		if (traine != null) {
+			respon.setStatus("Success");
+			respon.setAlertMessage("Congratualtions You Successfully Registered");
+			trainee.setEmail(trainee.getEmail());
+			trainee.setName(trainee.getName());
+
+		} else {
+			respon.setStatus("Fail");
+			respon.setAlertMessage("Sorry! Try To Proper way for Registration");
+		}
+		return respon;
+
+	}
+
+	// Service Method for show The Data
+	public List<Trainee> allregisteredTrainee() {
+		Response response = new Response();
+		response.setStatus("Trainee Id was Not Found");
+		response.setAlertMessage("Please enter a Id That exist on databases");
+		return traineerepo.findAll();
+
+	}
+
+	// Get By Id
+	public Trainee getTraineeById(Integer traineeId) {
+		Response response = new Response();
+		response.setStatus("Trainee Id was Not Found");
+		response.setAlertMessage("Please enter a Id That exist on databases");
+		return traineerepo.findById(traineeId).get();
+	}
+
+	// Method For Delete Data
+	public void delete(Integer traineeId) {
+		traineerepo.deleteById(traineeId);
+	}
+
+	// Trainee Login
+	public Response userlogin(Trainee trainee) {
+		Response repond = new Response();
+
+		Trainee authcheck = traineerepo.findByEmailAndPassword(trainee.getEmail(), trainee.getPassword());
+		if (authcheck != null) {
+			repond.setAlertMessage("Login Success");
+			repond.setStatus("Sucess");
+			return repond;
+		} else {
+			repond.setAlertMessage("Failed to Login");
+			repond.setStatus("Fail");
+			return repond;
+		}
+	}
+	
+	
+	// Update 
+
+	public Trainee update_trainee(Trainee trainee) {
+		Optional<Trainee> traineedata = this.traineerepo.findById(trainee.getTraineeid());
+		if (traineedata.isPresent()) {
+			Trainee traineeupdate = traineedata.get();
+			traineeupdate.setTraineeid(trainee.getTraineeid());
+			traineeupdate.setName(trainee.getName());
+			traineeupdate.setUsername(trainee.getUsername());
+			traineeupdate.setEmail(trainee.getEmail());
+			traineeupdate.setPassword(trainee.getPassword());
+			return traineeupdate;
+
+		}
+		return trainee;
+
+	}
+	
+	//update and save 
+
+	
+		
+		
+		// New way of insert
+//		public ResponseEntity<?> traineeAdd(Trainee trainee){
+//			
+//			try {
+//				traineerepo.save(trainee);
+//				return new  ResponseEntity<Response>(new Response("Success", "New Trainee Is Added"), HttpStatus.CREATED);
+//				
+//				
+//			} catch (DataIntegrityViolationException e) {
+//				return  new ResponseEntity  <Response>(new Response("Error", "Already Register"), HttpStatus.CONFLICT);
+//				// TODO: handle exception
+//			}
+	
+	// Sazzad vai
+	
+	public ResponseEntity<Response> showTraineeById(Integer traineeId){
+		Optional<Trainee> traineeOptional = traineerepo.findById(traineeId);
+		if(traineeOptional.isPresent()) {
+			Trainee trainee = traineeOptional.get();
+			Response responseentity = new Response(1000,"Success", "Success to show",
+					Collections.singletonList(trainee));
+			return new ResponseEntity<Response> (responseentity, HttpStatus.OK);
+
+					
 			
 		}
-		
-		Trainee traine= traineerepo.save(trainee);
-		
-	
-	// Response Here Show a Response after successfully  Added The Data
-	
-	if(traine!=null) {
-		respon.setStatus("Success");
-		respon.setAlertMessage("Congratualtions You Successfully Registered");
-		
+		else {
+			Response responseentity = new Response(200, "Failed", "Not Found", Collections.emptyList());
+			return new ResponseEntity<Response> (responseentity, HttpStatus.OK);
+		}
 	}
-	else {
-		respon.setStatus("Fail");
-		respon.setAlertMessage("Sorry! Try To Proper way for Registration");
-	}
-	return respon;
 
-	} 
-	// Service Method for show The Data 
-	public List<Trainee> allregisteredTrainee(){
-		return traineerepo.findAll();
+	}
 		
-	}
-	//Get By Id 
-	public Trainee getTraineeById(Integer traineeId) {
-		return  traineerepo.findById(traineeId).get();
-	}
-	// The Method used To Update Data 
-	public Trainee updateById( Trainee trainee, Integer traineeId) {
-		 return traineerepo.save(trainee);
-	}
-	
-	// Method For Delete Data 
-	public void delete( Integer traineeId) {
-	 traineerepo.deleteById(traineeId);
-	} 
-	
-	// Trainee Login
-	
-	public Trainee traineeLogin(Trainee trainee) {
-		return traineerepo.findByUsernameAndPassword(trainee.getUsername(), trainee.getPassword());
-	}
-	
-}
+		
+		
+
+

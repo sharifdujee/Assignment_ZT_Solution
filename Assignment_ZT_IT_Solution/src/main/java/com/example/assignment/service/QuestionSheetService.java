@@ -10,49 +10,53 @@ import com.example.assignment.response.Response;
 @Service
 public class QuestionSheetService {
 	@Autowired
-	private  QuestionSheetRepository  questionrepo;
-	
+	private QuestionSheetRepository questionrepo;
+
 	public Response addquestion(QuestionSheet questionsheet) {
 		Response respond = new Response();
-	
-	
-	//check validation 
-		if(questionsheet.getCorrectAnswer().equals("")) {
+
+		// check validation
+		if (questionsheet.getCorrectAnswer().equals("")) {
 			respond.setStatus("Fail");
 			respond.setAlertMessage("Add The Correct Answer Before Add The Question ");
 			return respond;
-		}
-		else if(questionsheet.getQuestion().equals("")) {
+		} else if (questionsheet.getQuestion().equals("")) {
 			respond.setStatus("Fail");
 			respond.setAlertMessage(" Please Add  The Question ");
 			return respond;
-			
+
 		}
 		QuestionSheet savequestion = questionrepo.save(questionsheet);
-		
-		//response
-		
-		if(savequestion!=null) {
+
+		// response
+
+		if (savequestion != null) {
 			respond.setStatus("Sucess");
 			respond.setAlertMessage("Congratualtions Your Submission is Successfull");
 		}
-		return  respond;	 
-			
+		return respond;
+
 	}
-	
-	//Create a Method To Check correct answer
-	
-	public boolean isCorrect(Integer questionId, String answer){
-		
+
+	// Create a Method To Check correct answer
+
+	public boolean isCorrect(Integer questionId, String answer) {
+
 		QuestionSheet que = questionrepo.findByQuestionIdAndCorrectAnswer(questionId, answer);
-		
-		if(que != null) {
+
+		if (que != null) {
 			return true;
 		}
 		return false;
 	}
-	
-	
+	// Delete For any Question 
+	public void question_delete(Integer question_id) {
+		questionrepo.deleteById(question_id);
+	}
+
 }
 
-
+////// Method For Delete Data
+//public void delete(Integer traineeId) {
+//	traineerepo.deleteById(traineeId);
+//}
