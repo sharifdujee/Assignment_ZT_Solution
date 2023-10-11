@@ -1,9 +1,11 @@
 package com.example.assignment.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotBlank;
 
 // Marks class as an entity.
 @Entity
@@ -15,6 +17,8 @@ public class Trainee {
 	private String username;
 	// @Email (regexp = "[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,3}")
 	private String email;
+	@Column(unique = true)
+	@NotBlank(message = "Password is mandatory")
 	private String password;
 
 	// create default constructor

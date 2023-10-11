@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import com.example.assignment.response.Response;
 
 @Service
 public class TraineeService {
+	Response response = new Response();
 	@Autowired
 	private TraineeRepository traineerepo;
 
@@ -25,7 +27,7 @@ public class TraineeService {
 		// create an object for Response Class.
 		Response respon = new Response();
 
-		// check data validation before save the data
+		// check data validation Using Regular Expression before save the data
 
 		// create variables to check email validation.
 		Pattern p = Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$", Pattern.CASE_INSENSITIVE);
@@ -90,8 +92,12 @@ public class TraineeService {
 	}
 
 	// Method For Delete Data
-	public void delete(Integer traineeId) {
+	public Response delete(Integer traineeId) {
+		Response respon = new Response();
 		traineerepo.deleteById(traineeId);
+		response.setAlertMessage("Your Data is Successfully Remove");
+		return respon;
+
 	}
 
 	// Trainee Login
@@ -109,9 +115,8 @@ public class TraineeService {
 			return repond;
 		}
 	}
-	
-	
-	// Update 
+
+	// Update
 
 	public Trainee update_trainee(Trainee trainee) {
 		Optional<Trainee> traineedata = this.traineerepo.findById(trainee.getTraineeid());
@@ -128,47 +133,58 @@ public class TraineeService {
 		return trainee;
 
 	}
-	
-	//update and save 
 
-	
-		
-		
-		// New way of insert
-//		public ResponseEntity<?> traineeAdd(Trainee trainee){
-//			
-//			try {
-//				traineerepo.save(trainee);
-//				return new  ResponseEntity<Response>(new Response("Success", "New Trainee Is Added"), HttpStatus.CREATED);
-//				
-//				
-//			} catch (DataIntegrityViolationException e) {
-//				return  new ResponseEntity  <Response>(new Response("Error", "Already Register"), HttpStatus.CONFLICT);
-//				// TODO: handle exception
-//			}
-	
-	// Sazzad vai
-	
-	public ResponseEntity<Response> showTraineeById(Integer traineeId){
+	// update and save
+
+	// New way of insert using validation package of Spring Boot
+	public ResponseEntity<?> traineeAdd(Trainee trainee) {
+
+		try {
+			traineerepo.save(trainee);
+			Response respond = new Response();
+			respond.setStatus("Fail");
+			return new ResponseEntity<Response>(
+					new Response("Success", "New Trainee Is Added", Collections.singletonList(trainee)),
+					HttpStatus.CREATED);
+
+		} catch (DataIntegrityViolationException e) {
+			return new ResponseEntity<Response>(new Response("Error", "Already Register"), HttpStatus.CONFLICT);
+			// TODO: handle exception
+		}
+	}
+
+	// Show Individual Trainee Information
+
+	public ResponseEntity<Response> showTraineeById(Integer traineeId) {
 		Optional<Trainee> traineeOptional = traineerepo.findById(traineeId);
-		if(traineeOptional.isPresent()) {
+		if (traineeOptional.isPresent()) {
 			Trainee trainee = traineeOptional.get();
-			Response responseentity = new Response(1000,"Success", "Success to show",
+			Response responseentity = new Response(1000, "Success", "Success to show",
 					Collections.singletonList(trainee));
-			return new ResponseEntity<Response> (responseentity, HttpStatus.OK);
+			return new ResponseEntity<Response>(responseentity, HttpStatus.OK);
 
-					
-			
-		}
-		else {
+		} else {
 			Response responseentity = new Response(200, "Failed", "Not Found", Collections.emptyList());
-			return new ResponseEntity<Response> (responseentity, HttpStatus.OK);
+			return new ResponseEntity<Response>(responseentity, HttpStatus.OK);
+		}
+	}
+	
+	//Update 
+	
+	public ResponseEntity<?>  updateTrainee(Integer traineeId, String name, String username, String email, String Password){
+		try {
+			Trainee trainee = traineerepo.findById(traineeId).get();
+			trainee.setName(username);
+			trainee.setUsername(username);
+			trainee.setEmail(email);
+			trainee.setPassword(Password);
+			traineerepo.save(trainee);
+			return new ResponseEntity <Response>(new Response("success", "Trainee Updated"), HttpStatus.OK);
+			
+		} catch (Exception e) {
+			return new ResponseEntity<Response>(new Response("error", e.toString()), HttpStatus.INTERNAL_SERVER_ERROR);
+			// TODO: handle exception
 		}
 	}
 
-	}
-		
-		
-		
-
-
+}

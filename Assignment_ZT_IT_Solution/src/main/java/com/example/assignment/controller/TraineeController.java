@@ -11,14 +11,16 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.example.assignment.entity.Trainee;
 import com.example.assignment.response.Response;
 import com.example.assignment.service.TraineeService;
 
+import jakarta.validation.Valid;
 
 @RestController
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:4200")
 
 //Combination of  @Controller and @ResponseBody  annotations that results in web requests returning data
 
@@ -26,16 +28,18 @@ public class TraineeController {
 	@Autowired
 	private TraineeService traineeService;
 
-	// The api for Save Data . Follow Some rules to given input name, userName , email is required & Follow the pattern to add userName and email
-//	@PostMapping("/addtrainee")
-//	public ResponseEntity<?> addResponse( @Valid @RequestBody Trainee trainee) {
-//		return traineeService.traineeAdd (trainee);
-//
-//	}
-	@PostMapping ("/traineeadd")
-		public Response  traineeadds(@RequestBody Trainee trainee) {
+	// The api for Save Data . Follow Some rules to given input name, userName ,
+	// email is required & Follow the pattern to add userName and email
+	@PostMapping("/addtrainee")
+	public ResponseEntity<?> addResponse(@Valid @RequestBody Trainee trainee) {
+		return traineeService.traineeAdd(trainee);
+
+	}
+
+	@PostMapping("/traineeadd")
+	public Response traineeadds(@RequestBody Trainee trainee) {
 		return traineeService.addTrainee(trainee);
-		
+
 	}
 
 	// Show
@@ -66,22 +70,23 @@ public class TraineeController {
 		return traineeService.userlogin(trainee);
 	}
 
-	// Update Method
-	@PutMapping("/update_trainee/{traineeId}")
-	public ResponseEntity<Trainee> update_Trainee(@PathVariable Integer traineeId, @RequestBody Trainee trainee) {
-		trainee.setTraineeid(traineeId);
-		return ResponseEntity.ok().body(this.traineeService.update_trainee(trainee));
-	}
-	
-	// Sazzad Vai
+//	// Update Method
+//	@PutMapping("/update_trainee/{traineeId}")
+//	public ResponseEntity<Trainee> update_Trainee(@PathVariable Integer traineeId, @RequestBody Trainee trainee) {
+//		trainee.setTraineeid(traineeId);
+//		return ResponseEntity.ok().body(this.traineeService.update_trainee(trainee));
+//	}
+
+	// show Individual Trainee Information
 	@GetMapping("trainee/{traineeId}")
-	public  ResponseEntity<?> getTraineeById(@PathVariable ("traineeId") Integer traineeId){
+	public ResponseEntity<?> getTraineeById(@PathVariable("traineeId") Integer traineeId) {
 		return traineeService.showTraineeById(traineeId);
 	}
-	
-	
-	
+
+	@PutMapping("/update")
+	public ResponseEntity<?> traineeUpdate(@RequestParam Integer traineeId, @RequestParam String name,
+			@RequestParam String username, @RequestParam String email, @RequestParam String password) {
+		return traineeService.updateTrainee(traineeId, name, username, email, password);
+	}
 
 }
-
-

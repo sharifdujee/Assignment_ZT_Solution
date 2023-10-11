@@ -8,20 +8,22 @@ public class Response {
 	private String alertMessage;
 	private List<Object> data;
 
-
 	public Response() {
 		super();
 	}
-	
-	
+
+	public Response(String status, String alertMessage, List<Object> data) {
+		super();
+		Status = status;
+		this.alertMessage = alertMessage;
+		this.data = data;
+	}
 
 	public Response(String status, String alertMessage) {
 		super();
 		Status = status;
 		this.alertMessage = alertMessage;
 	}
-	
-	
 
 	public Response(int statuscode, String status, String alertMessage, List<Object> data) {
 		super();
@@ -30,8 +32,6 @@ public class Response {
 		this.alertMessage = alertMessage;
 		this.data = data;
 	}
-
-
 
 	public String getStatus() {
 		return Status;
@@ -49,29 +49,20 @@ public class Response {
 		this.alertMessage = alertMessage;
 	}
 
-
-
 	public int getStatuscode() {
 		return statuscode;
 	}
-
-
 
 	public void setStatuscode(int statuscode) {
 		this.statuscode = statuscode;
 	}
 
-
-
 	public List<Object> getData() {
 		return data;
 	}
 
-
-
 	public void setData(List<Object> data) {
 		this.data = data;
 	}
-	
 
 }
